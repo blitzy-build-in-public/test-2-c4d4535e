@@ -83,8 +83,10 @@ Hello world
 ```
 
 `Content-Length` is 11 because `Hello world` is 11 bytes and the body has no trailing newline. The
-`Date` header and the exact connection headers depend on the moment of the request and on the
-client, which is why only the status line, `Content-Type` and the body are fixed.
+`Content-Type` value is exactly `text/plain`: no charset parameter is sent. Of the headers shown,
+only `Date` depends on the moment of the request; `Connection` and `Keep-Alive` depend on the
+client's protocol and its `Connection` header, and on the server's keep-alive timeout of five
+seconds (`timeout=5`). That is why only the status line, `Content-Type` and the body are fixed.
 
 Any other route:
 
@@ -180,8 +182,13 @@ Shutting down server
 ```
 
 The only two response bodies the server can write are `Hello world` and `Not Found`. No status
-code, error code, message or stack trace is ever sent to a client: a failure is reported on the
-server's own console, on stderr, and ends the process instead of reaching a response.
+code, error code, message or stack trace is ever sent to a client. A failure to start — a `PORT`
+the server refuses, or a port it cannot bind — is reported on the server's own console, on stderr,
+and ends the process with status `1`.
+
+Requests are different. A malformed request line is answered by the runtime itself, before the
+server sees it, and a request target that cannot be parsed as a URL is logged on stdout like any
+other request and still answered with one of those two bodies while the process keeps running.
 
 ## Stopping the server
 
@@ -200,6 +207,7 @@ To see the exit status yourself, start the server as a background job and interr
 
 ```bash
 node server.js &
+sleep 1
 kill -INT $!
 wait $!; echo "exit=$?"
 ```
@@ -208,8 +216,12 @@ wait $!; echo "exit=$?"
 exit=0
 ```
 
+The `sleep 1` gives the server time to bind its port and install its signal handler: a `SIGINT`
+delivered before that takes Node's default disposition, which ends the process with status `130`
+rather than the `0` shown above.
+
 An exit status of `1` instead means the server refused to start, and the reason is on stderr — see
-the [Configuration](#configuration) section for the two ways that happens.
+the [Configuration](#configuration) section for how that happens.
 
 ## Configuration
 
@@ -265,3 +277,6 @@ Failed to start server: port 3000 is already in use (EADDRINUSE). Stop the proce
 
 That line goes to stderr and the process exits with status `1`; the instance already listening on
 the port is not affected.
+
+Any other failure to bind — descriptor exhaustion, for instance — is reported on stderr as
+`Failed to start server: <code> <message>`, and the process exits with status `1` as well.
