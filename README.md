@@ -26,8 +26,8 @@ node --version
 v22.23.3
 ```
 
-Any version from `v18.0.0` upward works; the line above shows the version installed on the machine
-this documentation was written on.
+Any version from `v18.0.0` upward works; the `v22.23.3` above is only a sample of
+`node --version` output.
 
 ## Installation
 
