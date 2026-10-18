@@ -94,7 +94,7 @@ function startServer(port) {
       console.error(`Failed to start server: ${error.code} ${error.message}`);
     }
 
-    process.exit(1);
+    process.exitCode = 1;
   });
 
   // Node 18's server.close() waits for idle keep-alive sockets, and the APIs
@@ -140,7 +140,8 @@ if (port === null) {
   console.error(
     `Configuration error: PORT must be an integer between ${MIN_PORT} and ${MAX_PORT} (received "${process.env.PORT}")`
   );
-  process.exit(1);
+  process.exitCode = 1;
+  return;
 }
 
 server = startServer(port);
