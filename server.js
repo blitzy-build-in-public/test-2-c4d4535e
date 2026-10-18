@@ -70,9 +70,9 @@ function sendNotFound(res) {
 }
 
 function routeRequest(req, res) {
-  const pathname = getRequestPath(req);
+  logRequest(req.method, getRequestPath(req));
 
-  logRequest(req.method, pathname);
+  const pathname = getRequestPath(req);
 
   if (req.method === 'GET' && pathname === HELLO_PATH) {
     sendHelloWorld(res);
